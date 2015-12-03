@@ -46,6 +46,7 @@ define(["templates/mobileMainNavigation.tpl"], function(mobileNavTpl) {
             }).remove();
             testMainNav.desktopNav.find(".mega-menu:not(:has(li))").remove();
         },
+        
         managePromoContent: function(total, sublist) {
             var listTag = '<ul class="mega-menu"></ul>';
             total.each(function(index, item) {/*...*/});
