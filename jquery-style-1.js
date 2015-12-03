@@ -1,29 +1,5 @@
 define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "templates/checkoutPaymentSelectedBillingAddress.tpl", "checkoutServerSideValidaton", "templates/checkoutState.tpl", "checkoutUI", "checkoutPaymentPlugin"], function($, parsley, ajaxFactory, handlebars, googleAddressApi, checkoutPaymentSelectedBillingAddress, checkoutServerSideValidaton, checkoutPaymentState, checkoutUI) {
-    var duplicateCheck = false,
-        cybersourceCardTypeCodes = {
-            visa: "001",
-            mastercard: "002",
-            amex: "003",
-            discover: "004",
-            dinersclub: "005",
-            jcb: "007"
-        },
-        cybersourceCardNumLength = {
-            visa: 16,
-            mastercard: 16,
-            amex: 15,
-            discover: 16,
-            jcb: 16
-        },
-        cvvNumberlength = {
-            visa: 4,
-            mastercard: 4,
-            amex: 3,
-            discover: 4,
-            dinersclub: 4,
-            jcb: 4
-        };
-
+    var duplicateCheck = false;
     function knowUser(cards) {
         require(["templates/checkoutPaymentKnown.tpl"], function(checkoutPaymentKnown) {
             $('[data-tabpanel="credit-card"]').html(checkoutPaymentKnown({
@@ -52,108 +28,16 @@ define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "t
     }
 
     function editSelectedCardDetails(subscriptionid, creditCards) {
-        var card = creditCards.filter(function(elem) {
+        return creditCards.filter(function(elem) {
             return +elem.subscriptionId === +subscriptionid;
         })[0];
-        require(["templates/checkoutPaymentKnownChangeCCModel.tpl"], function(checkoutPaymentKnownChangeCCModel) {
-            $("[data-change-credit-modal]").html(checkoutPaymentKnownChangeCCModel({
-                card: card,
-                paymentResponse: checkoutPaymentDetail.response,
-                formId: "editCardBillingAddress",
-                editBilling: true,
-                addBilling: false
-            }));
-        });
-        $("#change-card-modal").on("hidden.bs.modal", function() {
-            $("[data-change-credit-modal]").html("");
-        });
-        $("#change-card-modal").on("shown.bs.modal", function() {
-            selectDefaultBillingAddress();
-            $("#editCardBillingAddress").parsley().validate();
-            checkoutUI.methods.ccValidate();
-        });
-    }
-
-    function addCardDetails() {
-        require(["templates/checkoutPaymentKnownChangeCCModel.tpl"], function(checkoutPaymentKnownChangeCCModel) {
-            $("[data-add-new-card]").html(checkoutPaymentKnownChangeCCModel({
-                paymentResponse: checkoutPaymentDetail.response,
-                formId: "editCardBillingAddress",
-                editBilling: false,
-                addBilling: true
-            }));
-        });
-        $("#newcard-modal").on("hidden.bs.modal", function() {
-            $("[data-add-new-card]").html("");
-        });
-        $("#newcard-modal").on("shown.bs.modal", function() {
-            selectDefaultBillingAddress();
-            checkoutUI.methods.ccValidate();
-        });
     }
 
     function makePrimaryCardRequest() {}
 
     function cardCVVNumberUpdate() {}
 
-    function populatepaymentgetway(data) {
-        var obj = JSON.parse(data);
-        document.getElementsByName("bill_to_address_city")[1].value = obj.params.bill_to_address_city;
-        document.getElementsByName("bill_to_email")[1].value = obj.params.bill_to_email;
-        document.getElementsByName("profile_id")[0].value = obj.params.profile_id;
-        document.getElementsByName("bill_to_address_state")[1].value = obj.params.bill_to_address_state;
-        document.getElementsByName("signed_date_time")[0].value = obj.params.signed_date_time;
-        document.getElementsByName("transaction_type")[0].value = obj.params.transaction_type;
-        document.getElementsByName("bill_to_surname")[1].value = obj.params.bill_to_surname;
-        document.getElementsByName("locale")[0].value = obj.params.locale;
-        document.getElementsByName("bill_to_address_line1")[1].value = obj.params.bill_to_address_line1;
-        document.getElementsByName("transaction_uuid")[0].value = obj.params.transaction_uuid;
-        document.getElementsByName("bill_to_address_country")[1].value = obj.params.bill_to_address_country;
-        document.getElementsByName("currency")[0].value = obj.params.currency;
-        document.getElementsByName("bill_to_address_postal_code")[1].value = obj.params.bill_to_address_postal_code;
-        document.getElementsByName("bill_to_forename")[1].value = obj.params.bill_to_forename;
-        document.getElementsByName("reference_number")[0].value = obj.params.reference_number;
-        document.getElementsByName("signed_field_names")[0].value = obj.params.signed_field_names;
-        document.getElementsByName("access_key")[0].value = obj.params.access_key;
-        document.getElementsByName("payment_method")[0].value = obj.params.payment_method;
-        document.getElementsByName("unsigned_field_names")[0].value = obj.params.unsigned_field_names;
-        document.getElementsByName("signature")[0].value = obj.params.signature;
-    }
-
-    function hideForm(id) {
-        if (id === "deleteCardForm") {
-            document.getElementById("addNewCardForm").style.display = "none";
-            document.getElementById("paymentAuthorizationForm").style.display = "none";
-            document.getElementById("addressVerificationForm").style.display = "none";
-            document.getElementById("deleteCardForm").style.display = "";
-        } else {
-            if (id === "addNewCardForm") {
-                document.getElementById("addNewCardForm").style.display = "";
-                document.getElementById("paymentAuthorizationForm").style.display = "none";
-                document.getElementById("deleteCardForm").style.display = "none";
-                document.getElementById("addressVerificationForm").style.display = "none";
-            } else {
-                if (id === "paymentAuthorizationForm") {
-                    document.getElementById("addNewCardForm").style.display = "none";
-                    document.getElementById("paymentAuthorizationForm").style.display = "";
-                    document.getElementById("deleteCardForm").style.display = "none";
-                    document.getElementById("addressVerificationForm").style.display = "none";
-                } else {
-                    document.getElementById("addNewCardForm").style.display = "none";
-                    document.getElementById("paymentAuthorizationForm").style.display = "none";
-                    document.getElementById("deleteCardForm").style.display = "none";
-                    document.getElementById("addressVerificationForm").style.display = "";
-                }
-            }
-        }
-    }
-
-    function showCard() {
-        if (document.getElementsByName("updateAuth")[0].value === "yes") {
-            document.getElementsByName("card_exp_month")[0].disabled = false;
-            document.getElementsByName("card_exp_year")[0].disabled = false;
-        }
-    }
+    function populatepaymentgetway() {}
 
     function convertFormToJSON(form) {
         var array = jQuery(form).serializeArray();
@@ -162,66 +46,6 @@ define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "t
             json[this.name] = this.value || "";
         });
         return json;
-    }
-
-    function displayDefaultBillingAddress(selectedAddress) {
-        $(".modal .billing-info").html(checkoutPaymentSelectedBillingAddress({
-            addressDetails: selectedAddress
-        }));
-    }
-
-    function selectDefaultBillingAddress() {
-        if ($(".billing-dropdown li.selected").length) {
-            $(".addressListDropdown span").html($(".billing-dropdown li.selected a").html());
-        } else {
-            $(".addressListDropdown span").html($(".billing-dropdown li a").html());
-            $(".billing-dropdown li")[0].setAttribute("class", "selected");
-            var selectedAddress = $(".billing-dropdown li.selected").data("addresslist");
-            displayDefaultBillingAddress(selectedAddress);
-        }
-    }
-
-    function newLoadBillingAddressTpl(tplName, objRef, edit) {
-        if (tplName === "edit") {
-            var editData = objRef.data("billingaddress");
-            if (edit) {
-                $("#addModalBilling").html("");
-                checkoutPaymentDetail.selectedState = editData.stateISO;
-                require(["templates/checkoutPaymentKnownChangeCCModelEdit.tpl"], function(checkoutPaymentKnownChangeCCModelEdit) {
-                    $("#editModalBilling").html(checkoutPaymentKnownChangeCCModelEdit({
-                        card: editData,
-                        paymentResponse: checkoutPaymentDetail.response,
-                        edit: true
-                    }));
-                    $("#telephone").intlTelInput({
-                        preferredCountries: [$("#resourceBundle").data("preferedcountry")]
-                    });
-                    googleAddressApi.googleApi();
-                    $(".billing-list .addressListDropdown").attr("disabled", true);
-                    checkoutPaymentDetail.getStateList();
-                    $("#editCardBillingAddress").parsley().validate();
-                });
-                checkoutPaymentDetail.modaledit = false;
-            } else {
-                $("#editModalBilling").html("");
-                require(["templates/checkoutPaymentKnownChangeCCModelEdit.tpl"], function(checkoutPaymentKnownChangeCCModelEdit) {
-                    $("#addModalBilling").html(checkoutPaymentKnownChangeCCModelEdit({
-                        paymentResponse: checkoutPaymentDetail.response,
-                        edit: false
-                    }));
-                    $(".modal .billing-list").hide();
-                    $("#addModalBilling").show();
-                    $("#telephone").intlTelInput({
-                        preferredCountries: [$("#resourceBundle").data("preferedcountry")]
-                    });
-                    googleAddressApi.googleApi();
-                    $("#editCardBillingAddress").parsley().validate();
-                });
-                checkoutPaymentDetail.modaledit = false;
-                $("#editCardBillingAddress").parsley().validate();
-            }
-            $(".modal .billing-info").hide();
-        }
     }
 
     function validateCardFields() {
