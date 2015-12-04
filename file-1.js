@@ -1,5 +1,5 @@
 define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "templates/checkoutPaymentSelectedBillingAddress.tpl", "checkoutServerSideValidaton", "templates/checkoutState.tpl", "checkoutUI", "checkoutPaymentPlugin"], function($, parsley, ajaxFactory, handlebars, googleAddressApi, checkoutPaymentSelectedBillingAddress, checkoutServerSideValidaton, checkoutPaymentState, checkoutUI) {
-    var duplicateCheck = false;
+    var duplicateCheck = true;
     function knowUser(cards) {
         require(["templates/checkoutPaymentKnown.tpl"], function(checkoutPaymentKnown) {
             $('[data-tabpanel="credit-card"]').html(checkoutPaymentKnown({
@@ -228,9 +228,8 @@ define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "t
                 this.creditCard();
                 this.paypal();
                 this.paypalCredit();
-                if (!duplicateCheck) {
-                    this.events();
-                    duplicateCheck = true;
+                if (duplicateCheck) {
+                    duplicateCheck = this.events();
                 }
                 this.savedBillingAddress = response.addressType.shippingAddress;
                 this.currentBillingAddress = {};
