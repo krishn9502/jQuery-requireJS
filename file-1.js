@@ -49,41 +49,14 @@ define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "t
     }
 
     function validateCardFields() {
-        var guestCreditCard = $("#guestCreditCard"),
-            billingNewAddressForm = $("#billingNewAddressForm"),
-            paymentForm = $("#paymentForm");
-        if (guestCreditCard.length) {
-            guestCreditCard.parsley().validate();
-        }
-        if (billingNewAddressForm.length) {
-            billingNewAddressForm.parsley().validate();
-        }
-        if (paymentForm.length) {
-            paymentForm.parsley().validate();
-        }
-        if (guestCreditCard.length && $("#guestCreditCard").parsley().isValid() && paymentForm.length && $("#paymentForm").parsley().isValid()) {
-            if (!$("#billing-toggle2").is(":checked")) {
-                return $("#billingNewAddressForm").parsley().isValid();
-            } else {
-                return true;
-            }
-        }
         return false;
     }
 
     function validateAndAddCard() {
-        $("#payment_form,#paymentgetway").find('input[name="currency"]').val($('[data-cc-for="currency"]').val());
-        if (!$("#billing-toggle2").is(":checked")) {
-            insertLatestCardDetailsValues();
-        }
-        if (validateCardFields()) {
-            $("#submitCCDetails").trigger("click");
-        }
+        insertLatestCardDetailsValues();
     }
 
     function validateSavedCards() {
-        $("#savedCardsForms").parsley("validate");
-        $("#savedCardsForms").parsley().validate();
         return $("#savedCardsForms").parsley().isValid();
     }
 
@@ -254,12 +227,8 @@ define(["jquery", "parsley", "ajaxFactory", "handlebars", "googleAddressApi", "t
         },
         changeBillingAddress: function() {
             $(document).on("click", ".billing-list .billing-dropdown li", function() {
-                var billingListDropdown = $(".billing-list .billing-dropdown");
-                billingListDropdown.find("li").removeClass("selected");
-                $(this).addClass("selected");
                 checkoutPaymentDetail.selectedShippingAddress($(this).find("a").attr("id"));
                 checkoutPaymentDetail.currentBillingAddress = $(this).find("a").attr("id");
-                billingListDropdown.find(".dropdown-toggle span").html($(this).find("a").html());
             });
         },
         selectedShippingAddress: function(addressId) {
